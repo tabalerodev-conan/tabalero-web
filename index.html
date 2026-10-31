@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Los Tabaleros: folclore mutante, rock y fiesta. Música, fechas y novedades."
+    />
+    <meta name="theme-color" content="#100b12" />
+    <title>Los Tabaleros — Folclore surrealista</title>
+
+    <!-- Tailwind CSS por CDN: ideal para este template; en producción conviene compilarlo. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#100b12",
+              paper: "#f8f2e9",
+              coral: "#ff3d61",
+              violet: "#9b5cff",
+              gold: "#f5c451",
+            },
+            fontFamily: {
+              display: ["Impact", "Haettenschweiler", "Arial Narrow", "sans-serif"],
+              body: ["DM Sans", "Arial", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        scroll-behavior: smooth;
+        scroll-padding-top: 5.5rem;
+      }
+
+      body {
+        font-family: "DM Sans", Arial, sans-serif;
+        background: #100b12;
+      }
+
+      .display-type {
+        font-family: "Space Grotesk", Impact, sans-serif;
+      }
+
+      .hero-grain::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        pointer-events: none;
+        opacity: 0.18;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      }
+
+      .text-outline {
+        color: transparent;
+        -webkit-text-stroke: 1px rgba(248, 242, 233, 0.72);
+      }
+
+      .album-art {
+        background:
+          radial-gradient(circle at 70% 22%, rgba(245, 196, 81, 0.9), transparent 18%),
+          radial-gradient(circle at 28% 80%, rgba(255, 61, 97, 0.9), transparent 32%),
+          linear-gradient(140deg, #391640 0%, #17101e 56%, #682340 100%);
+      }
+
+      .album-art:nth-child(2) {
+        background:
+          radial-gradient(circle at 32% 26%, rgba(255, 61, 97, 0.95), transparent 22%),
+          radial-gradient(circle at 72% 78%, rgba(155, 92, 255, 0.9), transparent 34%),
+          linear-gradient(135deg, #27122f, #6d173e 55%, #1a1021);
+      }
+
+      .album-art:nth-child(3) {
+        background:
+          radial-gradient(circle at 70% 70%, rgba(245, 196, 81, 0.92), transparent 19%),
+          radial-gradient(circle at 25% 25%, rgba(155, 92, 255, 0.88), transparent 30%),
+          linear-gradient(135deg, #29112e, #15101d 56%, #642943);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 650ms ease, transform 650ms ease;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="overflow-x-hidden text-paper antialiased">
+    <!-- Navegación fija -->
+    <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-ink/80 backdrop-blur-xl">
+      <nav class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 md:px-8" aria-label="Navegación principal">
+        <a href="#inicio" class="display-type text-lg font-bold uppercase tracking-[0.12em]" aria-label="Los Tabaleros, inicio">
+          Los <span class="text-coral">Tabaleros</span>
+        </a>
+        <button
+          id="menu-toggle"
+          class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 md:hidden"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-links"
+          aria-label="Abrir menú"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <div id="nav-links" class="absolute left-0 right-0 top-[4.5rem] hidden flex-col gap-1 border-b border-white/10 bg-ink px-5 py-5 md:static md:flex md:flex-row md:items-center md:gap-8 md:border-0 md:bg-transparent md:p-0">
+          <a class="nav-link py-2 text-sm text-white/75 transition hover:text-white" href="#nosotros">Nosotros</a>
+          <a class="nav-link py-2 text-sm text-white/75 transition hover:text-white" href="#lanzamientos">Música</a>
+          <a class="nav-link py-2 text-sm text-white/75 transition hover:text-white" href="#agenda">Agenda</a>
+          <a class="nav-link mt-2 inline-flex items-center justify-center rounded-full bg-coral px-5 py-2.5 text-sm font-bold text-white transition hover:bg-rose-400 md:mt-0" href="#agenda">Próximos shows <span class="ml-2" aria-hidden="true">↗</span></a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Foto de prensa de Los Tabaleros publicada por Billboard Argentina. -->
+      <section id="inicio" class="hero-grain relative flex min-h-[92svh] items-end overflow-hidden bg-[#241021] pt-28 md:min-h-screen">
+        <div
+          class="absolute inset-0 bg-cover bg-center opacity-65"
+          style="background-image: url('https://billboard.ar/wp-content/uploads/2025/03/66576d7a2dba6f5d44ffaede_Los-Tabaleros.webp'); background-position: center top"
+          role="img"
+          aria-label="Los Tabaleros, foto de prensa publicada por Billboard Argentina"
+        ></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/20"></div>
+        <div class="absolute -right-20 top-28 h-72 w-72 rounded-full bg-violet/20 blur-[100px] md:right-20 md:top-32 md:h-[30rem] md:w-[30rem]"></div>
+        <div class="relative mx-auto w-full max-w-7xl px-5 pb-20 md:px-8 md:pb-24">
+          <p class="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-gold md:text-sm">
+            <span class="h-2 w-2 rounded-full bg-coral"></span> Desde Buenos Aires, para el baile
+          </p>
+          <h1 class="display-type max-w-5xl text-6xl font-bold uppercase leading-[0.84] tracking-[-0.06em] sm:text-7xl md:text-9xl">
+            Los<br />
+            <span class="text-coral">Tabaleros</span>
+          </h1>
+          <div class="mt-7 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <p class="max-w-lg text-lg leading-relaxed text-white/80 md:text-xl">
+              Folclore surrealista.<br class="hidden sm:block" />
+              Una fiesta que no pide permiso.
+            </p>
+            <div class="flex flex-wrap gap-3">
+              <a href="#agenda" class="inline-flex items-center gap-3 rounded-full bg-paper px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-gold">
+                Ver agenda <span aria-hidden="true">↓</span>
+              </a>
+              <a href="https://open.spotify.com/search/Los%20Tabaleros" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 rounded-full border border-white/40 px-6 py-3.5 text-sm font-bold text-white transition hover:border-white hover:bg-white/10">
+                Escuchar en Spotify <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+          <div class="mt-14 flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
+            <span class="h-px w-12 bg-coral"></span> Folclore · Rock · Carnaval
+          </div>
+        </div>
+        <div class="absolute right-8 top-1/2 hidden -rotate-90 text-[10px] font-bold uppercase tracking-[0.3em] text-white/55 lg:block">Subí el volumen</div>
+      </section>
+
+      <!-- Nosotros -->
+      <section id="nosotros" class="relative overflow-hidden py-24 md:py-32">
+        <div class="absolute -left-36 top-28 h-80 w-80 rounded-full bg-coral/10 blur-[100px]"></div>
+        <div class="relative mx-auto max-w-7xl px-5 md:px-8">
+          <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
+            <div class="reveal">
+              <p class="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-coral">Quiénes somos</p>
+              <h2 class="display-type text-5xl font-bold uppercase leading-[0.92] tracking-tight sm:text-6xl">
+                Tradición<br />fuera de eje<span class="text-violet">.</span>
+              </h2>
+              <p class="mt-7 max-w-xl text-base leading-7 text-white/65">
+                Los Tabaleros mezclan la raíz del folclore argentino con la energía del rock y el pulso del carnaval. Guitarras, bombos y canciones para cantar en ronda: un universo propio, festivo y un poco surrealista.
+              </p>
+              <p class="mt-5 max-w-xl text-base leading-7 text-white/65">
+                Una banda que convierte cada escenario en una celebración colectiva, sin fronteras entre géneros ni entre quienes están arriba y abajo del escenario.
+              </p>
+              <figure class="mt-8 overflow-hidden rounded-2xl border border-white/10">
+                <img
+                  src="https://cdn-images.dzcdn.net/images/artist/ff68a6599d4de7b7641bda909383a770/1000x1000-000000-80-0-0.jpg"
+                  alt="Los Tabaleros, fotografía de perfil de artista"
+                  loading="lazy"
+                  class="aspect-[16/9] w-full object-cover"
+                />
+                <figcaption class="bg-white/[0.04] px-4 py-2 text-xs text-white/45">Los Tabaleros · Foto de artista</figcaption>
+              </figure>
+            </div>
+            <div class="reveal">
+              <div class="mb-5 flex items-end justify-between border-b border-white/15 pb-4">
+                <h3 class="display-type text-2xl font-bold uppercase">La banda</h3>
+                <span class="text-xs uppercase tracking-[0.18em] text-white/45">Buenos Aires · Argentina</span>
+              </div>
+              <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Integrantes de Los Tabaleros">
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Dani Giannico</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Joaquín Lagos</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Roberto Luis Martínez</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">José María Martínez</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Pablo Berreta</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Ignacio Diaz</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Félix Mateos</li>
+                <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold">Daniel Ferretti</li>
+              </ul>
+              <div class="mt-6 flex items-center gap-3 text-xs text-white/45">
+                <span class="text-2xl text-gold" aria-hidden="true">✳</span> Ocho músicos, un mismo ritual.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Carátulas y enlaces de canciones enlazados a Spotify. -->
+      <section id="lanzamientos" class="bg-paper py-24 text-ink md:py-32">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <div class="reveal mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <p class="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-rose-700">En rotación</p>
+              <h2 class="display-type text-5xl font-bold uppercase leading-none tracking-tight sm:text-6xl">Últimos<br class="sm:hidden" /> lanzamientos</h2>
+            </div>
+            <a href="https://open.spotify.com/artist/6aGMO33ETXuACXj9KfoyQg" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm font-bold transition hover:text-rose-700">
+              Toda la música <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <article class="reveal group">
+              <a href="https://open.spotify.com/intl-es/track/5CpSOeDKKBQn9ua26UHLn0" target="_blank" rel="noopener noreferrer" class="block" aria-label="Escuchar Azúcar y Algodón en Spotify">
+                <div class="album-art relative aspect-square overflow-hidden rounded-2xl p-6 text-white shadow-xl transition duration-500 group-hover:-translate-y-1">
+                  <img src="https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ddae83ab9c70321b98df332f" alt="Carátula de Azúcar y Algodón" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/15"></span>
+                  <span class="absolute -right-8 top-10 h-48 w-48 rounded-full border border-white/30"></span>
+                  <span class="absolute -right-1 top-[4.25rem] h-36 w-36 rounded-full border border-white/30"></span>
+                  <span class="absolute bottom-7 left-6 text-[10px] font-bold uppercase tracking-[0.25em]">Los Tabaleros</span>
+                  <span class="display-type absolute bottom-12 left-6 max-w-[80%] text-4xl font-bold uppercase leading-none">Azúcar y<br />Algodón</span>
+                  <span class="absolute right-6 top-6 rounded-full border border-white/40 px-3 py-1 text-[10px] font-bold">2023</span>
+                  <span class="absolute bottom-6 right-6 grid h-11 w-11 place-items-center rounded-full bg-paper text-lg text-ink transition group-hover:bg-coral group-hover:text-white" aria-hidden="true">▶</span>
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                  <div><h3 class="font-bold">Azúcar y Algodón</h3><p class="mt-1 text-sm text-ink/55">Caramelos de Felicidad · 2023</p></div>
+                  <span class="text-sm font-bold text-rose-700">Spotify ↗</span>
+                </div>
+              </a>
+              <iframe
+                title="Reproducir Azúcar y Algodón de Los Tabaleros"
+                src="https://open.spotify.com/embed/track/5CpSOeDKKBQn9ua26UHLn0?utm_source=generator"
+                width="100%"
+                height="152"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                class="mt-4 w-full rounded-xl"
+              ></iframe>
+            </article>
+            <article class="reveal group">
+              <a href="https://open.spotify.com/intl-es/track/2DfhgJeqYOurNo4BWla1uE" target="_blank" rel="noopener noreferrer" class="block" aria-label="Escuchar Escalera en Spotify">
+                <div class="album-art relative aspect-square overflow-hidden rounded-2xl p-6 text-white shadow-xl transition duration-500 group-hover:-translate-y-1">
+                  <img src="https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e029c916e4ba60b399a8a628ab8" alt="Carátula de Escalera" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/15"></span>
+                  <span class="absolute -left-8 top-12 h-52 w-52 rotate-12 border border-white/30"></span>
+                  <span class="absolute -left-1 top-[4.25rem] h-40 w-40 rotate-12 border border-white/30"></span>
+                  <span class="absolute bottom-7 left-6 text-[10px] font-bold uppercase tracking-[0.25em]">Los Tabaleros</span>
+                  <span class="display-type absolute bottom-12 left-6 max-w-[80%] text-4xl font-bold uppercase leading-none">Escalera</span>
+                  <span class="absolute right-6 top-6 rounded-full border border-white/40 px-3 py-1 text-[10px] font-bold">Spotify</span>
+                  <span class="absolute bottom-6 right-6 grid h-11 w-11 place-items-center rounded-full bg-paper text-lg text-ink transition group-hover:bg-coral group-hover:text-white" aria-hidden="true">▶</span>
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                  <div><h3 class="font-bold">Escalera</h3><p class="mt-1 text-sm text-ink/55">Single · Spotify</p></div>
+                  <span class="text-sm font-bold text-rose-700">Spotify ↗</span>
+                </div>
+              </a>
+              <iframe
+                title="Reproducir Escalera de Los Tabaleros"
+                src="https://open.spotify.com/embed/track/2DfhgJeqYOurNo4BWla1uE?utm_source=generator"
+                width="100%"
+                height="152"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                class="mt-4 w-full rounded-xl"
+              ></iframe>
+            </article>
+            <article class="reveal group">
+              <a href="https://open.spotify.com/intl-es/track/6q1llYmZvQQ59HSDnJo8BL" target="_blank" rel="noopener noreferrer" class="block" aria-label="Abrir la selección de Ritual Tabalero en Spotify">
+                <div class="album-art relative aspect-square overflow-hidden rounded-2xl p-6 text-white shadow-xl transition duration-500 group-hover:-translate-y-1">
+                  <img src="https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e3e017a83fa06d7df1d80fc0" alt="Carátula de Once - En Vivo, enlace de Spotify indicado para Ritual Tabalero" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/15"></span>
+                  <span class="absolute right-8 top-8 h-40 w-40 rounded-full bg-coral/30 blur-2xl"></span>
+                  <span class="absolute bottom-8 right-8 h-48 w-48 rounded-full border border-white/30"></span>
+                  <span class="absolute bottom-7 left-6 text-[10px] font-bold uppercase tracking-[0.25em]">Los Tabaleros</span>
+                  <span class="display-type absolute bottom-12 left-6 max-w-[80%] text-4xl font-bold uppercase leading-none">Ritual<br />Tabalero</span>
+                  <span class="absolute right-6 top-6 rounded-full border border-white/40 px-3 py-1 text-[10px] font-bold">En vivo</span>
+                  <span class="absolute bottom-6 right-6 grid h-11 w-11 place-items-center rounded-full bg-paper text-lg text-ink transition group-hover:bg-coral group-hover:text-white" aria-hidden="true">▶</span>
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                  <div><h3 class="font-bold">Ritual Tabalero</h3><p class="mt-1 text-sm text-ink/55">En vivo · Spotify</p></div>
+                  <span class="text-sm font-bold text-rose-700">Spotify ↗</span>
+                </div>
+              </a>
+              <iframe
+                title="Reproducir la selección de Ritual Tabalero en Spotify"
+                src="https://open.spotify.com/embed/track/6q1llYmZvQQ59HSDnJo8BL?utm_source=generator"
+                width="100%"
+                height="152"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                class="mt-4 w-full rounded-xl"
+              ></iframe>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Spotify puede bloquear el autoplay con sonido si el visitante no interactuó con la página. -->
+      <section id="escuchanos" class="relative overflow-hidden py-24 md:py-32">
+        <div class="absolute -right-28 top-0 h-96 w-96 rounded-full bg-violet/15 blur-[120px]"></div>
+        <div class="relative mx-auto grid max-w-7xl gap-12 px-5 md:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+          <div class="reveal">
+            <p class="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-gold">Dale play</p>
+            <h2 class="display-type text-5xl font-bold uppercase leading-[0.92] tracking-tight sm:text-6xl">La fiesta<br />empieza acá<span class="text-coral">.</span></h2>
+            <p class="mt-6 max-w-md text-base leading-7 text-white/65">Escuchá “Azúcar y Algodón” mientras recorrés la página.</p>
+            <a href="https://open.spotify.com/intl-es/track/5CpSOeDKKBQn9ua26UHLn0" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-3 rounded-full bg-[#1ed760] px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-[#50e681]">
+              Abrir Azúcar y Algodón en Spotify <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="reveal overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-3 shadow-2xl">
+            <iframe
+              title="Reproductor de Spotify: Azúcar y Algodón, de Los Tabaleros"
+              src="https://open.spotify.com/embed/track/5CpSOeDKKBQn9ua26UHLn0?autoplay=1&utm_source=generator"
+              width="100%"
+              height="152"
+              frameborder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="eager"
+              class="rounded-xl"
+            ></iframe>
+            <p class="px-3 pb-2 pt-3 text-xs text-white/50">Si el navegador bloquea el inicio automático, tocá Play en el reproductor.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agenda de muestra: reemplazá por fechas oficiales y links de ticketera. -->
+      <section id="agenda" class="bg-[#1a111c] py-24 md:py-32">
+        <div class="mx-auto max-w-7xl px-5 md:px-8">
+          <div class="reveal mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div>
+              <p class="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-coral">Nos vemos ahí</p>
+              <h2 class="display-type text-5xl font-bold uppercase leading-none tracking-tight sm:text-6xl">Próximas fechas</h2>
+            </div>
+            <span id="agenda-source" class="w-fit rounded-full border border-gold/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.17em] text-gold">Agenda de ejemplo</span>
+          </div>
+          <div id="show-list" class="reveal divide-y divide-white/10 border-y border-white/10">
+            <article class="grid gap-4 py-6 sm:grid-cols-[1fr_1.2fr_1.4fr_auto] sm:items-center">
+              <p class="display-type text-xl font-bold uppercase text-gold">14 nov 2026</p>
+              <div><p class="font-bold">Buenos Aires</p><p class="mt-1 text-sm text-white/50">Argentina</p></div>
+              <p class="text-sm text-white/70">Venue a confirmar</p>
+              <a href="#suscripcion" class="inline-flex w-fit items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-xs font-bold transition hover:bg-rose-400">Comprar entradas <span aria-hidden="true">↗</span></a>
+            </article>
+            <article class="grid gap-4 py-6 sm:grid-cols-[1fr_1.2fr_1.4fr_auto] sm:items-center">
+              <p class="display-type text-xl font-bold uppercase text-gold">21 nov 2026</p>
+              <div><p class="font-bold">Córdoba</p><p class="mt-1 text-sm text-white/50">Argentina</p></div>
+              <p class="text-sm text-white/70">Venue a confirmar</p>
+              <a href="#suscripcion" class="inline-flex w-fit items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-xs font-bold transition hover:bg-rose-400">Comprar entradas <span aria-hidden="true">↗</span></a>
+            </article>
+            <article class="grid gap-4 py-6 sm:grid-cols-[1fr_1.2fr_1.4fr_auto] sm:items-center">
+              <p class="display-type text-xl font-bold uppercase text-gold">12 dic 2026</p>
+              <div><p class="font-bold">Rosario</p><p class="mt-1 text-sm text-white/50">Santa Fe · Argentina</p></div>
+              <p class="text-sm text-white/70">Venue a confirmar</p>
+              <span class="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold text-white/45" aria-label="Entradas agotadas">Sold out <span aria-hidden="true">×</span></span>
+            </article>
+          </div>
+          <p id="agenda-message" class="mt-5 text-xs text-white/40">Fechas ilustrativas. Configurá Supabase para mostrar la agenda real.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer id="suscripcion" class="relative overflow-hidden border-t border-white/10 py-16 md:py-20">
+      <div class="absolute -bottom-36 left-1/2 h-72 w-96 -translate-x-1/2 rounded-full bg-coral/10 blur-[100px]"></div>
+      <div class="relative mx-auto max-w-7xl px-5 md:px-8">
+        <div class="grid gap-12 border-b border-white/10 pb-12 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <a href="#inicio" class="display-type text-3xl font-bold uppercase tracking-tight">Los <span class="text-coral">Tabaleros</span></a>
+            <p class="mt-4 max-w-sm text-sm leading-6 text-white/55">Canciones, baile y un poco de locura. Seguinos y enterate de las novedades.</p>
+            <div class="mt-6 flex gap-3">
+              <a class="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-sm font-bold transition hover:border-coral hover:text-coral" href="https://www.instagram.com/lostabaleros/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Los Tabaleros">IG</a>
+              <a class="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-sm font-bold transition hover:border-coral hover:text-coral" href="https://www.youtube.com/results?search_query=Los+Tabaleros" target="_blank" rel="noopener noreferrer" aria-label="Los Tabaleros en YouTube">YT</a>
+              <a class="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-sm font-bold transition hover:border-coral hover:text-coral" href="https://open.spotify.com/search/Los%20Tabaleros" target="_blank" rel="noopener noreferrer" aria-label="Los Tabaleros en Spotify">SP</a>
+            </div>
+          </div>
+          <div>
+            <h2 class="display-type text-2xl font-bold uppercase">Sumate a la ronda</h2>
+            <p class="mt-2 text-sm text-white/55">Novedades, fechas y canciones directo a tu mail.</p>
+            <form id="mailing-form" class="mt-5 flex flex-col gap-3 sm:flex-row">
+              <label class="sr-only" for="email">Tu correo electrónico</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="tu@email.com" required class="min-h-12 flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-violet" />
+              <button type="submit" class="min-h-12 rounded-full bg-paper px-6 text-sm font-bold text-ink transition hover:bg-gold">Quiero recibir novedades <span aria-hidden="true">↗</span></button>
+            </form>
+            <p id="form-message" class="mt-3 min-h-5 text-xs text-gold" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© <span id="current-year"></span> Los Tabaleros. Todos los derechos reservados.</p>
+          <div class="flex gap-5">
+            <a href="./admin.html" class="transition hover:text-white">Administrar agenda</a>
+            <a href="#inicio" class="w-fit transition hover:text-white">Volver arriba ↑</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const menuToggle = document.querySelector("#menu-toggle");
+      const navLinks = document.querySelector("#nav-links");
+
+      menuToggle.addEventListener("click", () => {
+        const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!isExpanded));
+        menuToggle.setAttribute("aria-label", isExpanded ? "Abrir menú" : "Cerrar menú");
+        navLinks.classList.toggle("hidden", isExpanded);
+        navLinks.classList.toggle("flex", !isExpanded);
+      });
+
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", () => {
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuToggle.setAttribute("aria-label", "Abrir menú");
+          navLinks.classList.add("hidden");
+          navLinks.classList.remove("flex");
+        });
+      });
+
+      document.querySelector("#current-year").textContent = new Date().getFullYear();
+
+      const revealObserver = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12 },
+      );
+      document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+      document.querySelector("#mailing-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        document.querySelector("#form-message").textContent =
+          "Formulario de muestra: conectalo a tu plataforma de mailing para recibir suscripciones.";
+      });
+    </script>
+    <script src="./agenda.js"></script>
+  </body>
+</html>
